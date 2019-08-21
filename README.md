@@ -2,7 +2,7 @@
 
 ## What is it
 
-A userspace rcu library for c++ with an easy to use interface, implemented in pure C++, implementing most of
+A userspace rcu library for c++ with an easy to use interface, implemented in pure C++, inspired by
 the api detailed in [liburcu](https://liburcu.org/).
 
 ## What is provided
