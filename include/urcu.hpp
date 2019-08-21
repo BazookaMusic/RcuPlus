@@ -69,7 +69,7 @@
                 delete [] rcu_table;
             }
 
-            RCUSentinel urcu_register(int id);
+            RCUSentinel urcu_register_thread(int thread_id);
     };
 
     class RCUSentinel {
