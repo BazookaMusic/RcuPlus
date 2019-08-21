@@ -7,7 +7,7 @@ obj/urcu.o: ./urcu.cpp include/urcu.hpp
 examples/example: examples/example.cpp
 	cd examples && $(CC) $(CFLAGS) ../obj/urcu.o  example.cpp -o example
 
-example: examples/example
+examples: examples/example
 
 obj/urcu_test_main.o: urcu_test_main.cpp urcu_test_main.cpp
 	$(CC) $(CFLAGS) -c urcu_test_main.cpp -o $@

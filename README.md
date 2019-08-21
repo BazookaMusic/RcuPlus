@@ -85,6 +85,9 @@ Important details:
 
 Complete example in examples.
 
+## Examples
+Run `make examples` to compile examples. The example executable will be in the examples folder.
 
 ## Tests
+The project is painlessly tested courtesy of [Catch2](https://github.com/catchorg/Catch2).
 Run `make run-tests` to run the tests. 
