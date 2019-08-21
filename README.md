@@ -9,7 +9,6 @@ the api detailed in [liburcu](https://liburcu.org/).
 
 A urcu_read_lock primitive and the appropriate urcu_synchronize call, all wrapped nicely in a cozy C++ interface.
 
----
 ## Requirements
  C++11 or newer. Makefile assumes gcc compiler.
 
