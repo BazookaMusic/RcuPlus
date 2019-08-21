@@ -1,7 +1,6 @@
 // Copyright 2019 Sotiris Dragonas
-#ifndef URCU_HPP_
-   
-    #define URCU_HPP
+#ifndef URCU_SRC_INCLUDE_URCU_HPP_
+    #define URCU_SRC_INCLUDE_URCU_HPP_
 
     #include <assert.h>
     #include <atomic>
@@ -23,18 +22,19 @@
             const int index;
             RCUNode** _rcu_table;
             const int threads;
+            std::atomic<int64_t>* time;
 
      public:
             RCULock(const int i, RCUNode** rcu_table, const int threads):
              index(i), _rcu_table(rcu_table), threads(threads) {
                 assert(threads > 0 && index < threads && _rcu_table[index]);
+                time = &_rcu_table[index]->time;
                 _rcu_table[index]->time += 1;
             }
 
             ~RCULock() {
                 assert(threads > 0 && index < threads && _rcu_table[index]);
-                // set lsb
-                _rcu_table[index]->time |= 1;
+                *time |= 1;
             }
     };
 
@@ -43,7 +43,6 @@
 
 
     class RCU {
-        
         friend class RCUSentinel;
 
      private:
@@ -71,7 +70,6 @@
             }
 
             RCUSentinel urcu_register(int id);
-
     };
 
     class RCUSentinel {
@@ -121,6 +119,6 @@
                 }
             }
     };
-#endif
+#endif  // URCU_SRC_INCLUDE_URCU_HPP_
 
 
