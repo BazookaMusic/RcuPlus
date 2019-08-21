@@ -84,3 +84,7 @@ Important details:
  2. Locks should only be created through the correspondent sentinel object
 
 Complete example in examples.
+
+
+## Tests
+Run `make run-tests` to run the tests. 

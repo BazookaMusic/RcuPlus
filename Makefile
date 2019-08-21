@@ -8,3 +8,14 @@ examples/example: examples/example.cpp
 	cd examples && $(CC) $(CFLAGS) ../obj/urcu.o  example.cpp -o example
 
 example: examples/example
+
+obj/urcu_test_main.o: urcu_test_main.cpp urcu_test_main.cpp
+	$(CC) $(CFLAGS) -c urcu_test_main.cpp -o $@
+
+DEPS= obj/urcu_test_main.o urcu_test.cpp obj/urcu.o
+tests: $(DEPS)
+	$(CC) $(CFLAGS) $(DEPS) -o $@
+
+run-tests: tests
+	./tests
+	
