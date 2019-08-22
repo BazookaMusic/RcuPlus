@@ -21,8 +21,6 @@ A urcu_read_lock primitive and the appropriate urcu_synchronize call, all wrappe
 
 ## How to use
 
-### In a nutshell
-
 #### The RCU object
 
 The RCU object is the first object which must be initialized to force rcu synchronization.
