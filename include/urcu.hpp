@@ -22,6 +22,8 @@
             const int threads;
 
      public:
+        // RCULock: Read locks its scope after its creation,
+        // unlocks when out of scope
         RCULock(const int i, RCUNode** rcu_table, const int threads);
         ~RCULock(void);
     };
@@ -38,10 +40,15 @@
             RCUNode** rcu_table;
 
      public:
+            // RCU: Allows registering threads for read locking
+            // and synchronizing writes
             explicit RCU(int num_threads);
 
             ~RCU();
-
+            // urcu_register_thread: register a thread to the rcu service
+            // and return an object to create read locks and synchronize
+            // with readers. thread_id should be unique and between 0 and
+            // number of threads
             RCUSentinel urcu_register_thread(int thread_id);
     };
 
@@ -52,15 +59,18 @@
             int64_t *times;
 
      public:
+            // RCUSentinel: allows a registered thread to
+            // create RCULocks and to wait for previously
+            // created locks. Requires a unique id for each thread
+            // from 0 to number of threads - 1. Non-unique ids
+            // will cause undefined behavior.
             RCUSentinel(const int id, const RCU* _rcu);
 
             ~RCUSentinel();
 
 
-
-            // RCULock object creates a read lock,
-            // which is released when it goes out of scope
-            // or it's destructor is called
+            // urcu_read_lock: Create an RCULock object for
+            // the registered thread
             inline RCULock urcu_read_lock() {
                 return RCULock(index, rcu->rcu_table, rcu->threads);
             }
