@@ -19,7 +19,8 @@ RCULock::~RCULock() {
 RCU::RCU(int num_threads) : threads(num_threads) {
     rcu_table = new RCUNode*[threads];
 
-    RCUNode* new_node;
+    // make sure there's no line sharing
+    alignas(URCU_CACHE_LINE) RCUNode* new_node;
     for (int i = 0; i < threads; i++) {
         new_node = new RCUNode;
         new_node->time = 1;

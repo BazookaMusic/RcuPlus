@@ -2,7 +2,12 @@
 #ifndef USERSPACERCU_INCLUDE_URCU_HPP_
     #define USERSPACERCU_INCLUDE_URCU_HPP_
 
-    #include <assert.h>
+    // used for line sharing
+    #ifndef URCU_CACHE_SIZE
+        #define URCU_CACHE_LINE 64
+    #endif
+
+    #include <cassert>
     #include <atomic>
     #include <iostream>
 
