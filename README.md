@@ -8,6 +8,7 @@ the api detailed in [liburcu](https://liburcu.org/).
 ## What is provided
 
 A urcu_read_lock primitive and the appropriate urcu_synchronize call, all wrapped nicely in a cozy C++ interface.
+It allows writer threads to wait for previous reader threads to finish before continuing the execution.
 
 ## Requirements
  C++11 or newer. Makefile assumes gcc compiler, but clang also compiles properly.
