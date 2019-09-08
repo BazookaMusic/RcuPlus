@@ -10,6 +10,7 @@
     #include <cassert>
     #include <atomic>
     #include <iostream>
+    #include <memory>
 
 
     typedef struct RCUNode {
@@ -25,8 +26,15 @@
             const int index;
             RCUNode** _rcu_table;
             const int threads;
+            bool valid;
 
      public:
+        RCULock(const RCULock&) = delete;
+        
+        RCULock(RCULock&& a_lock);
+
+        RCULock& operator=(const RCULock&) = delete;
+
         // RCULock: Read locks its scope after its creation,
         // unlocks when out of scope
         RCULock(const int i, RCUNode** rcu_table, const int threads);
@@ -45,6 +53,9 @@
             RCUNode** rcu_table;
 
      public:
+            RCU(const RCU&) = delete;
+            RCU& operator=(const RCU&) = delete;
+
             // RCU: Allows registering threads for read locking
             // and synchronizing writes
             explicit RCU(int num_threads);
@@ -64,6 +75,13 @@
             int64_t *times;
 
      public:
+            RCUSentinel& operator=(const RCUSentinel&) = delete;
+            RCUSentinel(const RCUSentinel&) = delete;
+
+            // only move constructor
+            RCUSentinel(RCUSentinel&& a_sentinel);
+           
+
             // RCUSentinel: allows a registered thread to
             // create RCULocks and to wait for previously
             // created locks. Requires a unique id for each thread
@@ -76,8 +94,8 @@
 
             // urcu_read_lock: Create an RCULock object for
             // the registered thread
-            inline RCULock urcu_read_lock() {
-                return RCULock(index, rcu->rcu_table, rcu->threads);
+            RCULock urcu_read_lock() {
+                return std::move(RCULock(index, rcu->rcu_table, rcu->threads));
             }
 
             // wait for previously created read locks

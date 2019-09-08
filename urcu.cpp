@@ -10,9 +10,17 @@ RCULock::RCULock(const int i, RCUNode** rcu_table, const int threads):
 }
 
 RCULock::~RCULock() {
+            if (!valid) return;
+
             assert(threads > 0 && index < threads && _rcu_table[index]);
             _rcu_table[index]->time |= 1;
 }
+
+RCULock::RCULock(RCULock&& a_lock): index(a_lock.index),
+        _rcu_table(a_lock._rcu_table),threads(a_lock.threads), valid(true) {
+            a_lock.valid = false;
+            a_lock._rcu_table = nullptr;
+        }
 
 
 // RCU
@@ -38,7 +46,7 @@ RCU::~RCU() {
 
 RCUSentinel RCU::urcu_register_thread(int thread_id) {
     assert(thread_id >= 0 && thread_id < this->threads);
-    return RCUSentinel(thread_id, this);
+    return std::move(RCUSentinel(thread_id, this));
 }
 
 
@@ -53,6 +61,11 @@ RCUSentinel::~RCUSentinel() {
         delete [] times;
     }
 }
+
+ RCUSentinel::RCUSentinel(RCUSentinel&& a_sentinel): index(a_sentinel.index), 
+            rcu(a_sentinel.rcu), times(a_sentinel.times) {
+                a_sentinel.times = nullptr;
+            }
 
 
 
