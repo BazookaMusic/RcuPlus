@@ -84,6 +84,14 @@ Important details:
 
 Complete example in examples.
 
+### Copying objects
+All objects are only moveable as copying them would make no sense. Using a moved object
+is undefined behavior.
+
+### Cache line sharing
+To eliminate cache line sharing by different threads, the parameter URCU_CACHE_LINE can be defined on compilation.
+By default, it's set to 64 bytes.
+
 ## Examples
 Run `make examples` to compile examples. The example executable will be in the examples folder.
 
