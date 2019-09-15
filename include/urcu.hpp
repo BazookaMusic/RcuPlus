@@ -29,6 +29,8 @@
             bool valid;
 
      public:
+        // delete copy constructor to avoid
+        // double references
         RCULock(const RCULock&) = delete;
         
         RCULock(RCULock&& a_lock);
