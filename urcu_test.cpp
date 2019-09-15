@@ -25,7 +25,7 @@ void read_critical_area(int thread_index, std::atomic<int> &counter, RCU& rcu) {
     // add small delay to make sure that
     // wait thread starts before end
     // fuzzy test, should only fish out weird issues
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 // simulates a waiting thread
@@ -35,10 +35,12 @@ void wait_for_readers(int thread_index, std::atomic<int> &counter,
 
     sentinel.urcu_synchronize();
 
+
     // All threads should be finished
-    if (counter == RCU_THREADS - 1) {
+    if (counter == (RCU_THREADS - 1)) {
         success = true;
     }
+
 }
 
 

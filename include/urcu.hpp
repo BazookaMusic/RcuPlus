@@ -71,7 +71,7 @@
     class RCUSentinel {
      private:
             const int index;
-            const RCU* rcu;
+            RCU* rcu;
             int64_t *times;
 
      public:
@@ -87,7 +87,7 @@
             // created locks. Requires a unique id for each thread
             // from 0 to number of threads - 1. Non-unique ids
             // will cause undefined behavior.
-            RCUSentinel(const int id, const RCU* _rcu);
+            RCUSentinel(const int id, RCU* _rcu);
 
             ~RCUSentinel();
 
@@ -95,7 +95,7 @@
             // urcu_read_lock: Create an RCULock object for
             // the registered thread
             RCULock urcu_read_lock() {
-                return std::move(RCULock(index, rcu->rcu_table, rcu->threads));
+                return RCULock(index, rcu->rcu_table, rcu->threads);
             }
 
             // wait for previously created read locks

@@ -1,9 +1,10 @@
 // Copyright 2019 Sotiris Dragonas
+#include <iostream>
 #include "include/urcu.hpp"
 
 // RCULock
 RCULock::RCULock(const int i, RCUNode** rcu_table, const int threads):
-             index(i), _rcu_table(rcu_table), threads(threads) {
+             index(i), _rcu_table(rcu_table), threads(threads), valid(true) {
     // bound check
     assert(threads > 0 && index < threads && _rcu_table[index]);
     _rcu_table[index]->time += 1;
@@ -51,7 +52,7 @@ RCUSentinel RCU::urcu_register_thread(int thread_id) {
 
 
 // RCUSentinel
-RCUSentinel::RCUSentinel(const int id, const RCU* _rcu): index(id),
+RCUSentinel::RCUSentinel(const int id, RCU* _rcu): index(id),
     rcu(_rcu), times(nullptr) {
     assert(rcu);
     }
@@ -65,6 +66,7 @@ RCUSentinel::~RCUSentinel() {
  RCUSentinel::RCUSentinel(RCUSentinel&& a_sentinel): index(a_sentinel.index), 
             rcu(a_sentinel.rcu), times(a_sentinel.times) {
                 a_sentinel.times = nullptr;
+                a_sentinel.rcu = nullptr;
             }
 
 
@@ -76,6 +78,10 @@ void RCUSentinel::urcu_synchronize() {
     // micro optimization,
     // if sentinel never invokes synchronize,
     // no need to allocate heap memory
+    if (!rcu) {
+        return;
+    }
+
     if (!times) {
         times = new int64_t[rcu->threads];
     }
