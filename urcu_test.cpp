@@ -10,7 +10,7 @@
 #include "include/urcu.hpp"
 
 
-const int RCU_THREADS = 100;
+const int RCU_THREADS = 1000;
 
 // simulates a read critical area
 void read_critical_area(int thread_index, std::atomic<int> &counter, RCU& rcu) {
@@ -25,7 +25,7 @@ void read_critical_area(int thread_index, std::atomic<int> &counter, RCU& rcu) {
     // add small delay to make sure that
     // wait thread starts before end
     // fuzzy test, should only fish out weird issues
-    //std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 // simulates a waiting thread
