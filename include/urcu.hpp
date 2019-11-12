@@ -13,8 +13,10 @@
     #include <memory>
 
 namespace URCU {
+    static_assert(URCU_CACHE_LINE > sizeof(std::atomic<int64_t>), "too small cache line size given");
     struct  RCUNode {
-        alignas(URCU_CACHE_LINE) std::atomic<int64_t> time;
+        std::atomic<int64_t> time;
+        char pad_to_align[URCU_CACHE_LINE - sizeof(std::atomic<int64_t>)];
     };
 
     class RCUSentinel;
