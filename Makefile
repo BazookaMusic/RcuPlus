@@ -9,7 +9,7 @@ examples/example: examples/example.cpp
 
 examples: examples/example
 
-obj/urcu_test_main.o: urcu_test_main.cpp urcu_test_main.cpp
+obj/urcu_test_main.o: urcu_test_main.cpp
 	$(CC) $(CFLAGS) -c urcu_test_main.cpp -o $@
 
 DEPS= obj/urcu_test_main.o urcu_test.cpp obj/urcu.o
