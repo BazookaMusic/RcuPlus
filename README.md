@@ -28,12 +28,9 @@ It allows writer threads to wait for previous reader threads to finish before co
 
 The RCU object is the first object which must be initialized to force rcu synchronization.
 It is initialized with the number of threads it will observe. Each thread must call it's method,
-`urcu_register_thread(int thread_id)` with a unique thread id from 0 to the number of threads declared.
-A non unique id will lead to undefined behavior and is assumed as a user contract to avoid including a
-complex indexing scheme. All threads registered to the same rcu object can be synchronized through a read 
-lock.
+`urcu_register_thread()`.
 
-The register method will return an RCUSentinel object with the unique thread id.
+The register method will return an RCUSentinel object.
 
 ```c++
 // simple
@@ -55,7 +52,7 @@ void someThreadReadjob(RCU& rcu) {
     // the sentinel contains the unique thread id and will allow
     // synchronization with all the threads registered to the rcu
     // object which generated it
-    auto sentinel = rcu.urcu_register_thread(my_thread_id);
+    auto sentinel = rcu.urcu_register_thread();
 
     // lock is released when locked goes out of scope
     {
@@ -65,7 +62,7 @@ void someThreadReadjob(RCU& rcu) {
 }
 
 void someThreadWriteJob(RCU& rcu) {
-    auto sentinel = rcu.urcu_register_thread(my_thread_id);
+    auto sentinel = rcu.urcu_register_thread();
 
     // wait for reader threads which started 
     // reading before the call to finish

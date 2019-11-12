@@ -12,10 +12,10 @@
     #include <iostream>
     #include <memory>
 
-
-    typedef struct RCUNode {
-        std::atomic<int64_t> time;
-    } RCUNode;
+namespace URCU {
+    struct  RCUNode {
+        alignas(URCU_CACHE_LINE) std::atomic<int64_t> time;
+    };
 
     class RCUSentinel;
     class RCU;
@@ -53,6 +53,7 @@
      private:
             int threads;
             RCUNode** rcu_table;
+            std::atomic<int> curr_thread_index;
 
      public:
             RCU(const RCU&) = delete;
@@ -67,7 +68,7 @@
             // and return an object to create read locks and synchronize
             // with readers. thread_id should be unique and between 0 and
             // number of threads
-            RCUSentinel urcu_register_thread(int thread_id);
+            RCUSentinel urcu_register_thread();
     };
 
     class RCUSentinel {
@@ -103,6 +104,7 @@
             // wait for previously created read locks
             void urcu_synchronize();
     };
+}
 #endif  // USERSPACERCU_INCLUDE_URCU_HPP_
 
 

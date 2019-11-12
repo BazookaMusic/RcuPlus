@@ -9,12 +9,13 @@
 #include "include/catch.hpp"
 #include "include/urcu.hpp"
 
+using namespace URCU;
 
 const int RCU_THREADS = 1000;
 
 // simulates a read critical area
-void read_critical_area(int thread_index, std::atomic<int> &counter, RCU& rcu) {
-    auto sentinel = rcu.urcu_register_thread(thread_index);
+void read_critical_area(std::atomic<int> &counter, RCU& rcu) {
+    auto sentinel = rcu.urcu_register_thread();
 
     // lock read area
     RCULock locked = sentinel.urcu_read_lock();
@@ -29,9 +30,9 @@ void read_critical_area(int thread_index, std::atomic<int> &counter, RCU& rcu) {
 }
 
 // simulates a waiting thread
-void wait_for_readers(int thread_index, std::atomic<int> &counter, 
+void wait_for_readers(std::atomic<int> &counter, 
                         RCU& rcu, bool &success) {
-    auto sentinel = rcu.urcu_register_thread(thread_index);
+    auto sentinel = rcu.urcu_register_thread();
 
     sentinel.urcu_synchronize();
 
@@ -62,13 +63,12 @@ int RCUTest() {
     for (int i = 0; i < RCU_THREADS - 1; i++) {
         threads[i] =
             std::thread(
-                read_critical_area, i,
+                read_critical_area,
                 std::ref(readCounter), std::ref(rcu));
     }
 
     threads[RCU_THREADS-1] =
     std::thread(wait_for_readers,
-        RCU_THREADS-1,
         std::ref(readCounter),
         std::ref(rcu),
         std::ref(success));
