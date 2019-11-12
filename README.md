@@ -1,4 +1,4 @@
-# userspaceRCUcpp
+# RcuPlus
 
 [![CircleCI](https://circleci.com/gh/BazookaMusic/RcuPlus/tree/master.svg?style=svg)](https://circleci.com/gh/BazookaMusic/RcuPlus/tree/master)
 
