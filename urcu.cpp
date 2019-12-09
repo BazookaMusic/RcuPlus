@@ -3,7 +3,7 @@
 #include "include/urcu.hpp"
 
 // RCULock
-URCU::RCULock::RCULock(const int i, RCUNode** rcu_table, const int threads):
+URCU::RCULock::RCULock(const int i, URCU::RCU::RCUNode** rcu_table, const int threads):
              index(i), _rcu_table(rcu_table), threads(threads), valid(true) {
     // bound check
     assert(threads > 0 && index < threads && _rcu_table[index]);
@@ -25,13 +25,13 @@ URCU::RCULock::RCULock(RCULock&& a_lock): index(a_lock.index),
 
 
 // RCU
-URCU::RCU::RCU(int num_threads) : threads(num_threads), curr_thread_index(-1) {
-    rcu_table = new RCUNode*[threads];
+URCU::RCU::RCU(int num_threads) : threads(num_threads), curr_thread_index(-1), free_indices_stack(new int[num_threads]), stack_index(-1) {
+    rcu_table = new URCU::RCU::RCUNode*[threads];
 
     // make sure there's no line sharing
-    RCUNode* new_node;
+    URCU::RCU::RCUNode* new_node;
     for (int i = 0; i < threads; i++) {
-        new_node = new RCUNode;
+        new_node = new URCU::RCU::RCUNode;
         new_node->time = 1;
         rcu_table[i] = new_node;
     }
@@ -43,11 +43,29 @@ URCU::RCU::~RCU() {
     }
 
     delete [] rcu_table;
+
+    delete [] free_indices_stack;
 }
 
 URCU::RCUSentinel URCU::RCU::urcu_register_thread() {
-    ++curr_thread_index;
-    return RCUSentinel(curr_thread_index, this);
+    stack_lock.lock();
+    static int index_to_ret = -1;
+    
+    if (stack_index >= 0) {
+        index_to_ret = free_indices_stack[stack_index--];
+    }
+    else if (curr_thread_index < threads - 1) {
+         ++curr_thread_index;
+         index_to_ret = curr_thread_index;
+    } else {
+        stack_lock.unlock();
+        std::cerr << "RCU: Not enough space to register threads" << std::endl;
+        exit(-1);
+    } 
+    
+    stack_lock.unlock();
+
+    return RCUSentinel(index_to_ret, this);
 }
 
 
@@ -61,6 +79,10 @@ URCU::RCUSentinel::~RCUSentinel() {
     if (times) {
         delete [] times;
     }
+
+    rcu->stack_lock.lock();
+    rcu->free_indices_stack[++rcu->stack_index] = index;
+    rcu->stack_lock.unlock();
 }
 
 URCU::RCUSentinel::RCUSentinel(RCUSentinel&& a_sentinel): index(a_sentinel.index), 

@@ -9,53 +9,31 @@
 
     #include <cassert>
     #include <atomic>
+    #include <mutex>
     #include <iostream>
     #include <memory>
 
 namespace URCU {
     static_assert(URCU_CACHE_LINE > sizeof(std::atomic<int64_t>), "too small cache line size given");
-    struct  RCUNode {
-        std::atomic<int64_t> time;
-        char pad_to_align[URCU_CACHE_LINE - sizeof(std::atomic<int64_t>)];
-    };
+
 
     class RCUSentinel;
-    class RCU;
-
-
-    class RCULock {
-     private:
-            const int index;
-            RCUNode** _rcu_table;
-            const int threads;
-            bool valid;
-
-     public:
-        // delete copy constructor to avoid
-        // double references
-        RCULock(const RCULock&) = delete;
-        
-        RCULock(RCULock&& a_lock);
-
-        RCULock& operator=(const RCULock&) = delete;
-
-        // RCULock: Read locks its scope after its creation,
-        // unlocks when out of scope
-        RCULock(const int i, RCUNode** rcu_table, const int threads);
-        ~RCULock(void);
-    };
-
-
-
-
-
+ 
     class RCU {
         friend class RCUSentinel;
-
+        friend class RCULock;
      private:
+            struct  RCUNode {
+                std::atomic<int64_t> time;
+                char pad_to_align[URCU_CACHE_LINE - sizeof(std::atomic<int64_t>)];
+            };
+
             int threads;
             RCUNode** rcu_table;
-            std::atomic<int> curr_thread_index;
+            int curr_thread_index;
+            int* free_indices_stack;
+            int stack_index;
+            std::mutex stack_lock;
 
      public:
             RCU(const RCU&) = delete;
@@ -71,7 +49,32 @@ namespace URCU {
             // with readers. thread_id should be unique and between 0 and
             // number of threads
             RCUSentinel urcu_register_thread();
+
     };
+
+
+    class RCULock {
+     private:
+            const int index;
+            RCU::RCUNode** _rcu_table;
+            const int threads;
+            bool valid;
+
+     public:
+        // delete copy constructor to avoid
+        // double references
+        RCULock(const RCULock&) = delete;
+        
+        RCULock(RCULock&& a_lock);
+
+        RCULock& operator=(const RCULock&) = delete;
+
+        // RCULock: Read locks its scope after its creation,
+        // unlocks when out of scope
+        RCULock(const int i, RCU::RCUNode** rcu_table, const int threads);
+        ~RCULock(void);
+    };
+
 
     class RCUSentinel {
      private:
@@ -94,6 +97,7 @@ namespace URCU {
             // will cause undefined behavior.
             RCUSentinel(const int id, RCU* _rcu);
 
+            // releases slot for new threads to register
             ~RCUSentinel();
 
 
@@ -102,9 +106,21 @@ namespace URCU {
             RCULock urcu_read_lock() {
                 return RCULock(index, rcu->rcu_table, rcu->threads);
             }
+            
+            // unregister thread
+            void urcu_unregister_thread();
 
             // wait for previously created read locks
             void urcu_synchronize();
+
+            // returns the unique internal id
+            // of the thread
+            // On deregister older ids may become available
+            // for reuse by new threads
+            int get_rcu_thread_id() const {
+                return index;
+            }
+
     };
 }
 #endif  // USERSPACERCU_INCLUDE_URCU_HPP_

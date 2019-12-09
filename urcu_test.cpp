@@ -5,9 +5,12 @@
 #include <iostream>
 #include <ctime>
 #include <thread>
+#include <mutex>
 
 #include "include/catch.hpp"
 #include "include/urcu.hpp"
+
+std::mutex g_lock;
 
 using namespace URCU;
 
@@ -15,6 +18,7 @@ const int RCU_THREADS = 1000;
 
 // simulates a read critical area
 void read_critical_area(std::atomic<int> &counter, RCU& rcu) {
+    
     auto sentinel = rcu.urcu_register_thread();
 
     // lock read area
@@ -43,6 +47,7 @@ void wait_for_readers(std::atomic<int> &counter,
     }
 
 }
+
 
 
 // should fail if wait thread does not properly wait for read threads
@@ -85,6 +90,28 @@ int RCUTest() {
     }
 
     return success;
+}
+
+TEST_CASE("Register-Retrieve threads test", "[reg-ret]") {
+    std::cout << "Testing RCU Read Locks and Synchronize" << std::endl;
+    RCU rcu(RCU_THREADS);
+
+    int map[RCU_THREADS*4 + 1];
+
+    for (int i = 0; i < RCU_THREADS*4; i++) {
+        map[i] = 0;
+    }
+
+
+
+    for (int i = 0; i < RCU_THREADS*4; i++) {
+        auto sentinel = rcu.urcu_register_thread();
+        auto id = sentinel.get_rcu_thread_id();
+        map[id]++;
+    }
+
+    REQUIRE(map[0] == 4000);
+    
 }
 
 
