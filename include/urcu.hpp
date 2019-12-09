@@ -30,7 +30,7 @@ namespace URCU {
 
             int threads;
             RCUNode** rcu_table;
-            int curr_thread_index;
+            std::atomic<int> curr_thread_index;
             int* free_indices_stack;
             int stack_index;
             std::mutex stack_lock;

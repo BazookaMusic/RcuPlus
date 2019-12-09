@@ -62,7 +62,7 @@ URCU::RCUSentinel URCU::RCU::urcu_register_thread() {
         std::cerr << "RCU: Not enough space to register threads" << std::endl;
         exit(-1);
     } 
-    
+
     stack_lock.unlock();
 
     return RCUSentinel(index_to_ret, this);
@@ -80,6 +80,8 @@ URCU::RCUSentinel::~RCUSentinel() {
         delete [] times;
     }
 
+    rcu->rcu_table[index]->time = -1;
+
     rcu->stack_lock.lock();
     rcu->free_indices_stack[++rcu->stack_index] = index;
     rcu->stack_lock.unlock();
@@ -89,7 +91,7 @@ URCU::RCUSentinel::RCUSentinel(RCUSentinel&& a_sentinel): index(a_sentinel.index
             rcu(a_sentinel.rcu), times(a_sentinel.times) {
                 a_sentinel.times = nullptr;
                 a_sentinel.rcu = nullptr;
-            }
+        }
 
 
 
@@ -113,7 +115,7 @@ void URCU::RCUSentinel::urcu_synchronize() {
     }
 
     for (int i = 0; i < rcu->curr_thread_index + 1; i++) {
-        if (times[i] & 1) continue;
+        if (times[i] < 0 || times[i] & 1) continue;
         for (;;) {
             int64_t t =
                 rcu->
