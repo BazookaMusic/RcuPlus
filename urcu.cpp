@@ -106,15 +106,17 @@ void URCU::RCUSentinel::urcu_synchronize() {
         return;
     }
 
+    int curr_times_size = rcu->curr_thread_index;
+
     if (!times) {
-        times = new int64_t[rcu->curr_thread_index + 1];
+        times = new int64_t[curr_times_size + 1];
     }
-    for (int i = 0; i < rcu->curr_thread_index + 1; i++) {
+    for (int i = 0; i < curr_times_size + 1; i++) {
         times[i] =
             rcu->rcu_table[i]->time.load(std::memory_order_relaxed);
     }
 
-    for (int i = 0; i < rcu->curr_thread_index + 1; i++) {
+    for (int i = 0; i < curr_times_size + 1; i++) {
         if (times[i] < 0 || times[i] & 1) continue;
         for (;;) {
             int64_t t =
