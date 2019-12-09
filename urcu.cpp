@@ -73,6 +73,7 @@ URCU::RCUSentinel URCU::RCU::urcu_register_thread() {
 URCU::RCUSentinel::RCUSentinel(const int id, RCU* _rcu): index(id),
     rcu(_rcu), times(nullptr) {
     assert(rcu);
+    rcu->rcu_table[index]->time = 1;
     }
 
 URCU::RCUSentinel::~RCUSentinel() {
